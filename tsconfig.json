@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "lib": ["ES6", "DOM"],
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+
