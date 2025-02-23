@@ -8,6 +8,8 @@ AI LangShift is an open source Chrome extension that instantly translates user-s
 - **Wide Compatibility:** Works on standard webpages as well as in input fields and contenteditable elements.
 - **Open Source:** Fully open source and hosted on GitHub, encouraging community contributions.
 
+![Options Page Screenshot](src/icons/option-sc.png)
+
 ## Table of Contents
 - [Installation](#installation)
 - [Building & Development](#building--development)
@@ -72,3 +74,6 @@ Open the extension’s options page to set your OpenAI API key and target langua
 
 ## Contributing
 Contributions are welcome! If you have suggestions or improvements, please open an issue or submit a pull request on the GitHub repository.
+
+## License
+This project is licensed under the [GPLv3 License](LICENSE).
