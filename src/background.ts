@@ -1,10 +1,8 @@
 chrome.commands.onCommand.addListener(async (command) => {
     if (command === "translate_selected_text") {
-      // Get the active tab
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab || !tab.id) return;
   
-      // Inject a function to get the currently selected text.
       const [{ result: selectedText }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: getSelectedText,
@@ -15,13 +13,11 @@ chrome.commands.onCommand.addListener(async (command) => {
         return;
       }
   
-      // Retrieve API key and target language from storage
       const { openai_api_key: apiKey, target_lang: targetLang = "en" } =
         await chrome.storage.sync.get(["openai_api_key", "target_lang"]);
   
       if (!apiKey) {
         console.warn("No API key found!");
-        // Optionally alert the user on the page
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           func: () => alert("No API key found! Please set it in the extension options."),
@@ -29,7 +25,6 @@ chrome.commands.onCommand.addListener(async (command) => {
         return;
       }
   
-      // Build the prompt and call the translation API
       const prompt = `Translate the following text to ${targetLang}: "${selectedText}"`;
   
       try {
@@ -73,9 +68,14 @@ chrome.commands.onCommand.addListener(async (command) => {
     return "";
   }  
   
+  function triggerInputEvent(element: HTMLElement) {
+    const event = new Event('input', { bubbles: true });
+    element.dispatchEvent(event);
+  }
+  
   function replaceSelectedText(translatedText: string) {
     const active = document.activeElement;
-    
+  
     if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
       const input = active as HTMLInputElement | HTMLTextAreaElement;
       if (input.selectionStart !== null && input.selectionEnd !== null) {
@@ -83,6 +83,22 @@ chrome.commands.onCommand.addListener(async (command) => {
         const end = input.selectionEnd;
         input.value = input.value.substring(0, start) + translatedText + input.value.substring(end);
         input.selectionStart = input.selectionEnd = start + translatedText.length;
+        triggerInputEvent(input);
+      }
+    } else if (active && active instanceof HTMLElement && active.isContentEditable) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        const textNode = document.createTextNode(translatedText);
+        range.insertNode(textNode);
+
+        range.setStartAfter(textNode);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        active.dispatchEvent(new Event('input', { bubbles: true }));
       }
     } else {
       const selection = window.getSelection();
@@ -93,4 +109,6 @@ chrome.commands.onCommand.addListener(async (command) => {
       }
     }
   }
+  
+
   
