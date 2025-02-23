@@ -16,6 +16,5 @@ yarn-error.log*
 Thumbs.db
 
 *.tsbuildinfo
-*.ts
 *.tsx
 *.map
