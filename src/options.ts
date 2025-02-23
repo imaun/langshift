@@ -29,36 +29,37 @@ const languages: { [key: string]: string } = {
     "uk": "Ukrainian",
     "id": "Indonesian",
     "vi": "Vietnamese"
-};
-
-const languageSelect = document.getElementById("languageSelect") as HTMLSelectElement;
-for (const [code, name] of Object.entries(languages)) {
+  };
+  
+  const languageSelect = document.getElementById("languageSelect") as HTMLSelectElement;
+  for (const [code, name] of Object.entries(languages)) {
     const option = document.createElement("option");
     option.value = code;
     option.textContent = name;
     languageSelect.appendChild(option);
-}
-
-chrome.storage.sync.get(["openai_api_key", "preferred_language"], (data) => {
+  }
+  
+  chrome.storage.sync.get(["openai_api_key", "target_lang"], (data) => {
     if (data.openai_api_key) {
-        (document.getElementById("apiKey") as HTMLInputElement).value = data.openai_api_key;
+      (document.getElementById("apiKey") as HTMLInputElement).value = data.openai_api_key;
     }
-    if (data.preferred_language) {
-        languageSelect.value = data.preferred_language;
+    if (data.target_lang) {
+      languageSelect.value = data.target_lang;
     }
-});
-
-document.getElementById("save")?.addEventListener("click", () => {
+  });
+  
+  document.getElementById("save")?.addEventListener("click", () => {
     const apiKey = (document.getElementById("apiKey") as HTMLInputElement).value.trim();
     const selectedLanguage = languageSelect.value;
-
-    chrome.storage.sync.set({ openai_api_key: apiKey, preferred_language: selectedLanguage }, () => {
-        alert("Settings saved!");
+  
+    chrome.storage.sync.set({ openai_api_key: apiKey, target_lang: selectedLanguage }, () => {
+      alert("Settings saved!");
     });
-});
-
-document.getElementById("clear")?.addEventListener("click", () => {
-    chrome.storage.sync.remove(["openai_api_key", "preferred_language"], () => {
-        alert("Settings cleared.");
+  });
+  
+  document.getElementById("clear")?.addEventListener("click", () => {
+    chrome.storage.sync.remove(["openai_api_key", "target_lang"], () => {
+      alert("Settings cleared.");
     });
-});
+  });
+  
