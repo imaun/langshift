@@ -73,13 +73,24 @@ chrome.commands.onCommand.addListener(async (command) => {
     return "";
   }  
   
-  // This function is injected into the page to replace the selected text.
   function replaceSelectedText(translatedText: string) {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(document.createTextNode(translatedText));
+    const active = document.activeElement;
+    
+    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
+      const input = active as HTMLInputElement | HTMLTextAreaElement;
+      if (input.selectionStart !== null && input.selectionEnd !== null) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        input.value = input.value.substring(0, start) + translatedText + input.value.substring(end);
+        input.selectionStart = input.selectionEnd = start + translatedText.length;
+      }
+    } else {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(translatedText));
+      }
     }
   }
   
