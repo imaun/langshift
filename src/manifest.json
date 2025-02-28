@@ -16,18 +16,12 @@
     "commands": {
       "translate_selected_text": {
         "suggested_key": {
-          "default": "Ctrl+Shift+T"
+          "default": "Alt+Shift+T"
         },
         "description": "Translate the selected text"
       }
     },
     "options_page": "options.html",
-    "host_permissions": ["https://api.openai.com/*"],
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"]
-      }
-    ]
+    "host_permissions": ["https://api.openai.com/*"]
 }
   

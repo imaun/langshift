@@ -6,6 +6,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "ping") {
+      console.log("Service worker is active");
+      sendResponse({ status: "alive" });
+    }
+});
+
 chrome.commands.onCommand.addListener(async (command) => {
     if (command === "translate_selected_text") {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
