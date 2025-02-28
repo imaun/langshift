@@ -1,3 +1,11 @@
+chrome.alarms.create("keep_alive", { periodInMinutes: 4 });
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "keep_alive") {
+    console.log("Keeping service worker alive");
+  }
+});
+
 chrome.commands.onCommand.addListener(async (command) => {
     if (command === "translate_selected_text") {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
