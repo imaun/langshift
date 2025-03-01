@@ -15,7 +15,7 @@ AI LangShift is an open source Chrome extension that instantly translates user-s
 - [Building & Development](#building--development)
 - [Testing](#testing)
 - [Usage](#usage)
-- [Contributing](#contributing)
+- [Contributing](#contributing) 
 - [License](#license)
 
 ## Installation
