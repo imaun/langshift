@@ -19,6 +19,9 @@ AI LangShift is an open source Chrome extension that instantly translates user-s
 - [License](#license)
 
 ## Installation
+You can install the extension from Chrome Extension marketplace [AI LangShift Chrome Extension](https://chromewebstore.google.com/detail/ai-langshift/bggfoidglkkhaldgnfcafndandalebmi).
+
+## Building & Development
 1. **Clone the Repository:**
    ```bash
    git clone https://github.com/imaun/langshift.git
@@ -33,8 +36,6 @@ AI LangShift is an open source Chrome extension that instantly translates user-s
     npm run build
     ```
     This command compiles the TypeScript files and copies static assets (HTML, CSS, manifest, icons) into the `dist` directory.
-
-## Building & Development
 
 - **TypeScript Compilation:**
 The project is written in TypeScript. To compile the code, run:
