@@ -18,6 +18,12 @@
           "default": "Alt+Shift+T"
         },
         "description": "Translate the selected text"
+      },
+      "improve_selected_text": {
+        "suggested_key": {
+          "default": "Alt+Shift+E"
+        },
+        "description": "Improve the selected text"
       }
     },
     "options_page": "options.html",
