@@ -123,6 +123,61 @@ chrome.commands.onCommand.addListener(async (command) => {
         console.error("Improvement failed:", error);
       }
     }
+
+    if (command === "summarize_selected_text") {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab || !tab.id) return;
+  
+      const [{ result: selectedText }] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: getSelectedText,
+      });
+  
+      if (!selectedText) {
+        console.warn("No text selected.");
+        return;
+      }
+  
+      const { openai_api_key: apiKey, target_lang: targetLang = "en" } =
+        await chrome.storage.sync.get(["openai_api_key", "target_lang"]);
+  
+      if (!apiKey) {
+        console.warn("No API key found!");
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          func: () => alert("No API key found! Please set it in the extension options."),
+        });
+        return;
+      }
+  
+      const prompt = `Summarize the following text while preserving key points in Concise (100 words): "${selectedText}"`;
+  
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4",
+            messages: [{ role: "system", content: prompt }],
+          }),
+        });
+  
+        const responseData = await response.json();
+        const improvedText =
+          responseData.choices?.[0]?.message?.content?.trim() || "⚠️ Summarize text failed.";
+  
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          args: [improvedText],
+          func: replaceSelectedText,
+        });
+      } catch (error) {
+        console.error("Summarize text failed:", error);
+      }
+    }
   });
   
   function getSelectedText() {

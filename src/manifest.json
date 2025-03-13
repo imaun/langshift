@@ -24,6 +24,12 @@
           "default": "Alt+Shift+E"
         },
         "description": "Improve the selected text"
+      },
+      "summarize_selected_text": {
+        "suggested_key": {
+          "default": "Alt+Shift+S"
+        },
+        "description": "Summarize the selected text"
       }
     },
     "options_page": "options.html",
