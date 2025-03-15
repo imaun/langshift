@@ -11,13 +11,14 @@ class OpenAITranslator extends Translator {
     async translate(text: string, targetLang: string, model: string): Promise<string | null> {
         const _apiUrl: string = 'https://api.openai.com/v1/chat/completions';
 
-        const { openai_api_key: apiKey } = await chrome.storage.sync.get([Constants.OPENAI_API_KEY]);
+        const { openai_api_key: apiKey, openai_translate_prompt: storedPrompt } = await chrome.storage.sync.get([Constants.OPENAI_API_KEY, Constants.OPENAI_TRANSLATE_PROMPT]);
         if(!apiKey) {
-            console.warn('⚠️ No OpenAI API key found.')
+            console.warn('⚠️ No OpenAI API key found.');
             return null;
         }
 
-        const prompt = `Translate the following text to ${targetLang}: \"${text}\"`;
+        const prompt = storedPrompt?.replace('${targetLang}', targetLang).replace('${text}', text) || 
+            `Translate the following text to ${targetLang}: \"${text}\"`;
 
         try {
             const response = await fetch(_apiUrl, {
@@ -47,13 +48,14 @@ class ClaudeTranslator extends Translator {
     async translate(text: string, targetLang: string, model: string): Promise<string | null> {
         const _apiUrl = 'https://api.anthropic.com/v1/messages';
 
-        const { claude_api_key: apiKey } = await chrome.storage.sync.get([Constants.CLAUDE_API_KEY]);
+        const { claude_api_key: apiKey, claude_translate_prompt: storedPrompt } = await chrome.storage.sync.get([Constants.CLAUDE_API_KEY, Constants.CLAUDE_TRANSLATE_PROMPT]);
         if(!apiKey) {
-            console.warn('⚠️ No Calude API key found.');
+            console.warn('⚠️ No Claude API key found.');
             return null;
         }
 
-        const prompt = `Translate the following text to ${targetLang}: \"${text}\"`;
+        const prompt = storedPrompt?.replace('${targetLang}', targetLang).replace('${text}', text) || 
+            `Translate the following text to ${targetLang}: \"${text}\"`;
 
         try {
             const response = await fetch(_apiUrl, {
@@ -82,7 +84,7 @@ class ClaudeTranslator extends Translator {
 class GeminiTranslator extends Translator {
 
     async translate(text: string, targetLang: string, model: string): Promise<string | null> {
-        const { gemini_api_key: apiKey } = await chrome.storage.sync.get([Constants.GEMINI_API_KEY]);
+        const { gemini_api_key: apiKey, gemini_translate_prompt: storedPrompt } = await chrome.storage.sync.get([Constants.GEMINI_API_KEY, Constants.GEMINI_TRANSLATE_PROMPT]);
 
         if(!apiKey) {
             console.warn('⚠️ No Gemini API key found.');
@@ -90,7 +92,8 @@ class GeminiTranslator extends Translator {
         }
 
         const _apiUrl = 'https://generativelanguage.googleapis.com/v1/models/' + (model || 'gemini-pro') + ":generateText?key=" + apiKey;
-        const Prompt = `Translate the following text to ${targetLang}: \"${text}\"`;
+        const prompt = storedPrompt?.replace('${targetLang}', targetLang).replace('${text}', text) || 
+            `Translate the following text to ${targetLang}: \"${text}\"`;
 
         try {
             const response = await fetch(_apiUrl, {
