@@ -1,3 +1,5 @@
+import { createTranslator } from "./translator";
+
 chrome.alarms.create("keep_alive", { periodInMinutes: 4 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -13,64 +15,56 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
+async function translateText(text: string, targetLang: string, provider: string): Promise<string | null> {
+    const translator = createTranslator(provider);
+    try {
+        return await translator.translate(text, targetLang, ''); // Empty string for default model
+    } catch (error) {
+        console.error(`Translation failed with ${provider}:`, error);
+        return null;
+    }
+}
+
 chrome.commands.onCommand.addListener(async (command) => {
     if (command === "translate_selected_text") {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab || !tab.id) return;
-  
-      const [{ result: selectedText }] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: getSelectedText,
-      });
-  
-      if (!selectedText) {
-        console.warn("No text selected.");
-        return;
-      }
-  
-      const { openai_api_key: apiKey, target_lang: targetLang = "en" } =
-        await chrome.storage.sync.get(["openai_api_key", "target_lang"]);
-  
-      if (!apiKey) {
-        console.warn("No API key found!");
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab || !tab.id) return;
+
+        const [{ result: selectedText }] = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: getSelectedText,
+        });
+
+        if (!selectedText) {
+            console.warn("No text selected.");
+            return;
+        }
+
+        // Get settings from storage
+        const { target_lang: targetLang = "en", ai_provider = "openai" } =
+            await chrome.storage.sync.get(["target_lang", "ai_provider"]);
+
+        // Get the translation
+        const translatedText = await translateText(selectedText, targetLang, ai_provider);
+
+        if (!translatedText) {
+            await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: () => alert("Translation failed! Please check your API key and settings."),
+            });
+            return;
+        }
+
+        // Replace the text on the page
         await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          func: () => alert("No API key found! Please set it in the extension options."),
+            target: { tabId: tab.id },
+            args: [translatedText],
+            func: replaceSelectedText,
         });
-        return;
-      }
-  
-      const prompt = `Translate the following text to ${targetLang}: "${selectedText}"`;
-  
-      try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4",
-            messages: [{ role: "system", content: prompt }],
-          }),
-        });
-  
-        const responseData = await response.json();
-        const translatedText =
-          responseData.choices?.[0]?.message?.content?.trim() || "⚠️ Translation failed.";
-  
-        await chrome.scripting.executeScript({
-          target: { tabId: tab.id },
-          args: [translatedText],
-          func: replaceSelectedText,
-        });
-      } catch (error) {
-        console.error("Translation failed:", error);
-      }
     }
-  });
+});
   
-  function getSelectedText() {
+function getSelectedText() {
     const active = document.activeElement;
     if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {
       const input = active as HTMLInputElement | HTMLTextAreaElement;
@@ -83,12 +77,12 @@ chrome.commands.onCommand.addListener(async (command) => {
     return "";
   }  
   
-  function triggerInputEvent(element: HTMLElement) {
+function triggerInputEvent(element: HTMLElement) {
     const event = new Event('input', { bubbles: true });
     element.dispatchEvent(event);
   }
   
-  function replaceSelectedText(translatedText: string) {
+function replaceSelectedText(translatedText: string) {
     const active = document.activeElement;
   
     if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) {

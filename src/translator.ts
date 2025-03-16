@@ -1,5 +1,24 @@
 import { Constants } from './constants';
 
+export const AI_PROVIDERS = {
+    OPENAI: 'openai',
+    CLAUDE: 'claude',
+    GEMINI: 'gemini'
+} as const;
+
+export function createTranslator(provider: string): Translator {
+    switch (provider.toLowerCase()) {
+        case AI_PROVIDERS.OPENAI:
+            return new OpenAITranslator();
+        case AI_PROVIDERS.CLAUDE:
+            return new ClaudeTranslator();
+        case AI_PROVIDERS.GEMINI:
+            return new GeminiTranslator();
+        default:
+            throw new Error(`Unsupported AI provider: ${provider}`);
+    }
+}
+
 class Translator {
     async translate(text: string, targetLang: string, model: string): Promise<string | null> {
         throw new Error('AI Translate provider not supported.');
